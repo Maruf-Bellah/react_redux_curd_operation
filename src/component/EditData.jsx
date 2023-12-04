@@ -1,18 +1,22 @@
 import React from "react";
 import { useState } from "react";
+import { Badge } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useAddLeaveMutation } from "../feature/apiSliceServer";
+import { useEditLeaveMutation } from "../feature/apiSliceServer";
 
-const OpenModal = () => {
+const EditData = ({ passData }) => {
+  // console.log(passData);
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  const [AddLeave, { isLoading, errors }] = useAddLeaveMutation();
+  const [editElem, setEditElem] = useState(passData);
+
+  const [editLeave] = useEditLeaveMutation();
 
   const makeDataObject = yup
     .object({
@@ -23,20 +27,29 @@ const OpenModal = () => {
   const {
     register,
     handleSubmit,
-    // formState: { errors },
+    formState: { errors },
   } = useForm({
     resolver: yupResolver(makeDataObject),
   });
   const onSubmit = (data) => {
     data.store = "6566e648a8d45ce8cf3f0f6b";
-    AddLeave(data);
+    data._id = `${passData?._id}`;
+    data.type = `${passData.type}`;
+    editLeave({ data});
+
     console.log(data);
   };
+
   return (
     <div>
-      <Button variant="primary" onClick={handleShow}>
-        Please Open modal
-      </Button>
+      <Badge
+        onClick={handleShow}
+        style={{ cursor: "pointer" }}
+        pill
+        bg="primary"
+      >
+        EditData
+      </Badge>
 
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -47,6 +60,10 @@ const OpenModal = () => {
             <div className="col-12">
               <input
                 {...register("name")}
+                value={editElem?.name}
+                onChange={(e) => {
+                  setEditElem({ ...editElem, name: e.target.value });
+                }}
                 className="form-control"
                 placeholder="Name"
               />
@@ -55,6 +72,10 @@ const OpenModal = () => {
             <div className="col-12">
               <select
                 {...register("status")}
+                value={editElem?.status}
+                onChange={(e) => {
+                  setEditElem({ ...editElem, status: e.target.value });
+                }}
                 className="form-select"
                 aria-label="Default select example"
               >
@@ -78,4 +99,4 @@ const OpenModal = () => {
   );
 };
 
-export default OpenModal;
+export default EditData;
